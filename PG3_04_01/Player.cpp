@@ -1,44 +1,73 @@
 ﻿#include "Player.h"
-#include "Novice.h"
+#include"Novice.h"
+#include"MatrixTrans.h"
 
-Player::Player()
+Player::~Player()
 {
-	Initialize();
+	for (PlayerBullet* bullet : playerbullets_) {
+		delete bullet;
+	}
 }
 
-void Player::Initialize()
+void Player::Initialize(const char* keys, const char* preKeys)
 {
-	Pos_ = { 0.0f,300.0f };
+	position_ = { 640.0f,360.0f };
+
+	radius_ = { 50.0f,50.0f };
+
+	keys_ = keys;
+
+	preKeys_ = preKeys;
+
 	speed_ = 5.0f;
 }
 
 void Player::Update()
 {
+	if (keys_[DIK_D])
+	{
+		position_.x += speed_;
+	}
+	else if (keys_[DIK_A])
+	{
+		position_.x -= speed_;
+	}
 
+	Attack();
+	for (PlayerBullet* bullet : playerbullets_)
+	{
+		bullet->Update(position_);
+	}
 }
 
 void Player::Draw()
 {
-	Novice::DrawEllipse((int)Pos_.x, (int)Pos_.y, 16, 16, 0.0f, WHITE, kFillModeSolid);
+	Novice::DrawBox((int)position_.x, (int)position_.y, (int)radius_.x, (int)radius_.y, 0.0f, WHITE, kFillModeSolid);
 
+	for (PlayerBullet* bullet : playerbullets_)
+	{
+		bullet->Draw();
+	}
 }
 
-void Player::UpMove()
+void Player::Attack()
 {
-	Pos_.y -= speed_;
+	if (keys_[DIK_SPACE] && !preKeys_[DIK_SPACE])
+	{
+
+		const float bulletspeed = 10.0f;
+		PlayerBullet* newbullet = new PlayerBullet();
+		newbullet->Initialize(bulletspeed, position_, keys_, preKeys_);
+
+		playerbullets_.push_back(newbullet);
+	}
 }
 
-void Player::DownMove()
+Vector2 Player::GetPosition()
 {
-	Pos_.y += speed_;
-}
+	Vector2 pos;
 
-void Player::RightMove()
-{
-	Pos_.x += speed_;
-}
-
-void Player::LeftMove()
-{
-	Pos_.x -= speed_;
+	pos.x = position_.x;
+	pos.y = position_.y;
+	return pos;
 }
